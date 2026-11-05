@@ -16,7 +16,10 @@ from typing import (
 import numpy as np
 import pandas as pd
 from pandas import Grouper
-from pandas.api.extensions import ExtensionArray
+from pandas.api.extensions import (
+    ExtensionArray,
+    no_default,
+)
 from pandas.api.typing import (
     NaTType,
     NAType,
@@ -434,6 +437,65 @@ def test_concat_args() -> None:
             )
 
 
+@pytest.mark.parametrize("union_categories", [True, False])
+def test_concat_union_categories(union_categories: bool) -> None:
+    left: pd.Series[str] = pd.Series(pd.Categorical(["a"], categories=["a", "b"]))
+    right: pd.Series[str] = pd.Series(pd.Categorical(["c"], categories=["b", "c"]))
+    result = pd.concat(
+        [left, right],
+        ignore_index=True,
+        sort=no_default,
+        union_categories=union_categories,
+    )
+    check(assert_type(result, "pd.Series[str]"), pd.Series, str)
+    expected = (
+        pd.Series(pd.Categorical(["a", "c"], categories=["a", "b", "c"]))
+        if union_categories
+        else pd.Series(["a", "c"])
+    )
+    pd.testing.assert_series_equal(result, expected)
+
+    frames = {"left": left.to_frame("value"), "right": right.to_frame("value")}
+    frame_result = pd.concat(frames, union_categories=union_categories)
+    check(assert_type(frame_result, pd.DataFrame), pd.DataFrame)
+    expected.index = pd.MultiIndex.from_tuples([("left", 0), ("right", 0)])
+    pd.testing.assert_frame_equal(frame_result, expected.to_frame("value"))
+
+    columns = pd.concat(
+        [left, right], axis="columns", union_categories=union_categories
+    )
+    check(assert_type(columns, pd.DataFrame), pd.DataFrame)
+    pd.testing.assert_frame_equal(columns, pd.DataFrame({0: left, 1: right}))
+
+
+def test_concat_union_categories_overloads() -> None:
+    integers = pd.Series([1])
+    strings = pd.Series(["a"])
+    mixed = pd.concat([integers, strings], union_categories=True)
+    check(assert_type(mixed, pd.Series), pd.Series)
+    pd.testing.assert_series_equal(mixed, pd.Series([1, "a"], index=[0, 0]))
+
+    frame = pd.DataFrame({"a": [2]})
+    mixed_frame = pd.concat([integers, frame], union_categories=False)
+    check(assert_type(mixed_frame, pd.DataFrame), pd.DataFrame)
+    pd.testing.assert_frame_equal(mixed_frame, pd.concat([integers, frame]))
+
+    if TYPE_CHECKING_INVALID_USAGE:
+
+        def _all_none() -> None:  # pyright: ignore[reportUnusedFunction]
+            assert_type(pd.concat([None], union_categories=True), Never)
+
+        def _incompatible_keys() -> None:  # pyright: ignore[reportUnusedFunction]
+            assert_type(
+                pd.concat(
+                    [frame], ignore_index=True, keys=["a"], union_categories=True
+                ),
+                Never,
+            )
+
+        pd.concat([integers], union_categories="yes")  # type: ignore[call-overload] # pyright: ignore[reportCallIssue,reportArgumentType] # pyrefly: ignore[no-matching-overload] # ty: ignore[no-matching-overload]
+
+
 def test_frame_subclass_concat() -> None:
     """Test concatenate subclass of DataFrame GH1396."""
 
@@ -445,7 +507,7 @@ def test_frame_subclass_concat() -> None:
     cdf1 = ChildDataFrame(data={"a": [0]})
     cdf2 = ChildDataFrame(data={"a": [1]})
 
-    cdf = pd.concat([cdf1, cdf2], ignore_index=True)
+    cdf = pd.concat([cdf1, cdf2], ignore_index=True, union_categories=True)
     check(assert_type(cdf, ChildDataFrame), ChildDataFrame)
 
 

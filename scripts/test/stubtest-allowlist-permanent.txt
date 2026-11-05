@@ -68,3 +68,6 @@ pandas.core.reshape.concat.DataFrameT0
 pandas.core.series.MaskTypeNoList
 pandas.io.excel._base.ExcelWriteWorkbook
 pandas.io.formats.style_render.StyleExportDict
+
+# concat deliberately rejects the deprecated, ignored copy keyword (tested in test_concat_args).
+pandas.core.reshape.concat.concat

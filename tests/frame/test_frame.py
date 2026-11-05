@@ -35,6 +35,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
+from pandas.api.extensions import no_default
 from pandas.api.typing import NAType
 from pandas.api.typing.aliases import Scalar
 from pandas.core.resample import (
@@ -3047,6 +3048,56 @@ def test_types_join() -> None:
     check(assert_type(df1.join(df2, how="outer"), pd.DataFrame), pd.DataFrame)
     check(assert_type(df1.join(df2, how="left"), pd.DataFrame), pd.DataFrame)
     check(assert_type(df1.join(df2, how="right"), pd.DataFrame), pd.DataFrame)
+
+
+@pytest.mark.parametrize(
+    "suffixes, columns",
+    [
+        (("_left", "_right"), ["A_left", "A_right"]),
+        ((None, "_right"), ["A", "A_right"]),
+        (("_left", None), ["A_left", "A"]),
+        (["_left", "_right"], ["A_left", "A_right"]),
+    ],
+)
+def test_join_suffixes(
+    suffixes: tuple[str | None, str | None] | list[str | None], columns: list[str]
+) -> None:
+    left = pd.DataFrame({"A": [1, 2]})
+    right = pd.DataFrame({"A": [3, 4]})
+    result = left.join(
+        right,
+        lsuffix=no_default,
+        rsuffix=no_default,
+        sort=True,
+        validate="1:1",
+        suffixes=suffixes,
+    )
+    check(assert_type(result, pd.DataFrame), pd.DataFrame)
+    expected = pd.DataFrame({columns[0]: [1, 2], columns[1]: [3, 4]})
+    pd.testing.assert_frame_equal(result, expected)
+    series_result = left.join(right["A"], suffixes=suffixes)
+    check(assert_type(series_result, pd.DataFrame), pd.DataFrame)
+    pd.testing.assert_frame_equal(series_result, expected)
+
+
+def test_join_suffixes_subclass() -> None:
+    class ChildDataFrame(pd.DataFrame):
+        @property
+        def _constructor(self) -> type[ChildDataFrame]:
+            return ChildDataFrame
+
+    left = ChildDataFrame({"A": [1]})
+    right = pd.DataFrame({"A": [2]})
+    result = left.join(right, suffixes=("_left", "_right"))
+    check(assert_type(result, ChildDataFrame), ChildDataFrame)
+    pd.testing.assert_frame_equal(
+        result, ChildDataFrame({"A_left": [1], "A_right": [2]})
+    )
+    if TYPE_CHECKING_INVALID_USAGE:
+        left.join(right, suffixes="_right")  # type: ignore[call-overload] # pyright: ignore[reportCallIssue,reportArgumentType] # pyrefly: ignore[no-matching-overload] # ty: ignore[no-matching-overload]
+        left.join(right, lsuffix="_left", suffixes=("_a", "_b"))  # type: ignore[call-overload] # pyright: ignore[reportCallIssue,reportArgumentType] # pyrefly: ignore[no-matching-overload] # ty: ignore[no-matching-overload]
+        left.join(right, rsuffix="_right", suffixes=("_a", "_b"))  # type: ignore[call-overload] # pyright: ignore[reportCallIssue,reportArgumentType] # pyrefly: ignore[no-matching-overload] # ty: ignore[no-matching-overload]
+        left.join([right], suffixes=("_a", "_b"))  # type: ignore[call-overload] # pyright: ignore[reportCallIssue,reportArgumentType] # pyrefly: ignore[no-matching-overload] # ty: ignore[no-matching-overload]
 
 
 def test_types_ffill() -> None:

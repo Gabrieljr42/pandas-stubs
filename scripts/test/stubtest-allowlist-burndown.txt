@@ -212,7 +212,6 @@ pandas.core.frame.DataFrame.filter
 pandas.core.frame.DataFrame.hist
 pandas.core.frame.DataFrame.infer_objects
 pandas.core.frame.DataFrame.interpolate
-pandas.core.frame.DataFrame.join
 pandas.core.frame.DataFrame.map
 pandas.core.frame.DataFrame.mask
 pandas.core.frame.DataFrame.merge
@@ -345,7 +344,6 @@ pandas.core.resample.Resampler.first
 pandas.core.resample.Resampler.last
 pandas.core.resample.TimeGrouper.__init__
 pandas.core.resample._GroupByMixin.__init__
-pandas.core.reshape.concat.concat
 pandas.core.reshape.merge.merge
 pandas.core.reshape.pivot.pivot
 pandas.core.series.Series.__array__

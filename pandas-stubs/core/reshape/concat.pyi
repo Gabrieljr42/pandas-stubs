@@ -14,6 +14,7 @@ from pandas.core.frame import DataFrame
 from pandas.core.generic import NDFrame
 from pandas.core.series import Series
 
+from pandas._libs.lib import NoDefault
 from pandas._typing import (
     S2,
     Axis,
@@ -38,7 +39,8 @@ def concat(
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> Never: ...
 @overload
 def concat(
@@ -51,7 +53,8 @@ def concat(
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> Never: ...
 @overload
 def concat(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
@@ -64,7 +67,8 @@ def concat(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappin
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> Series[S2]: ...
 @overload
 def concat(  # type: ignore[overload-overlap]
@@ -77,7 +81,8 @@ def concat(  # type: ignore[overload-overlap]
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> Series: ...
 @overload
 def concat(
@@ -90,7 +95,8 @@ def concat(
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> DataFrame: ...
 @overload
 def concat(
@@ -103,7 +109,8 @@ def concat(
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> DataFrameT0: ...
 @overload
 def concat(
@@ -116,5 +123,6 @@ def concat(
     levels: Sequence[list[HashableT3] | tuple[HashableT3, ...]] | None = None,
     names: list[HashableT4] | None = None,
     verify_integrity: bool = False,
-    sort: bool = False,
+    sort: bool | NoDefault = ...,
+    union_categories: bool = False,
 ) -> DataFrame: ...
